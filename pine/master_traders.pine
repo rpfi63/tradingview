@@ -1,0 +1,39 @@
+//@version=6
+indicator("Master Traders Setup (Vays+Brandt+DonAlt)", overlay=true, max_labels_count=10)
+
+wma50  = ta.wma(close, 50)
+wma200 = ta.wma(close, 200)
+sma8   = ta.sma(close, 8)
+sma18  = ta.sma(close, 18)
+
+// Lines on chart
+plot(wma200, title="WMA 200 (Vays)", color=color.red,    linewidth=3, display=display.all)
+plot(wma50,  title="WMA 50 (Vays)",  color=color.orange, linewidth=2, display=display.all)
+plot(sma18,  title="SMA 18 (Brandt)",color=color.yellow, linewidth=1, display=display.all)
+plot(sma8,   title="SMA 8 (Brandt)", color=color.lime,   linewidth=1, display=display.all)
+
+// SMA crossover background signal
+bgcolor(ta.crossover(sma8, sma18)  ? color.new(color.green, 85) : na, title="Bull Cross")
+bgcolor(ta.crossunder(sma8, sma18) ? color.new(color.red,   85) : na, title="Bear Cross")
+
+// Colored labels on right axis
+if barstate.islast
+    label.new(bar_index + 2, wma200, "WMA 200  " + str.tostring(math.round(wma200, 0)),
+      xloc=xloc.bar_index, yloc=yloc.price,
+      color=color.red, textcolor=color.white,
+      style=label.style_label_left, size=size.small)
+
+    label.new(bar_index + 2, wma50, "WMA 50  " + str.tostring(math.round(wma50, 0)),
+      xloc=xloc.bar_index, yloc=yloc.price,
+      color=color.orange, textcolor=color.white,
+      style=label.style_label_left, size=size.small)
+
+    label.new(bar_index + 2, sma18, "SMA 18  " + str.tostring(math.round(sma18, 0)),
+      xloc=xloc.bar_index, yloc=yloc.price,
+      color=color.new(color.yellow, 20), textcolor=color.black,
+      style=label.style_label_left, size=size.small)
+
+    label.new(bar_index + 2, sma8, "SMA 8  " + str.tostring(math.round(sma8, 0)),
+      xloc=xloc.bar_index, yloc=yloc.price,
+      color=color.lime, textcolor=color.black,
+      style=label.style_label_left, size=size.small)

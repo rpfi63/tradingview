@@ -1,65 +1,91 @@
 {
   "watchlist": ["BTCUSDT"],
-  "default_timeframe": "1",
+  "default_timeframe": "W",
 
   "strategy": {
-    "name": "10-Second Momentum Scalper",
+    "name": "High-Timeframe BTC Analysis (Vays + Brandt + DonAlt)",
     "sources": [
-      "Price momentum — buy if last close > previous close (green candle)",
-      "RSI filter — only trade when RSI is not at an extreme (30–70 range)"
+      "Tone Vays: Weekly RSI + MACD + WMA 50/200 — momentum reversal on weekly closes",
+      "Peter Brandt: SMA 8/18 crossover + classical chart pattern breakouts with volume",
+      "DonAlt: Horizontal S/R zones + Swing Failure Patterns — range edges only"
     ],
     "primary_timeframes": [
-      "1-minute (signal source)",
-      "10-second execution loop"
+      "Weekly (macro bias — all three traders agree this is primary)",
+      "Daily (entry confirmation)",
+      "4H (DonAlt entry only)"
     ]
   },
 
   "indicators": {
-    "rsi_14": "Momentum filter. Only trade when RSI is between 30–70 (avoid extremes).",
-    "price_momentum": "Compare last close vs previous close. Up = long signal. Down = short signal."
+    "rsi_14_weekly": "Tone Vays: Bullish below 30 with volume spike + bullish divergence. Bearish above 70 with MACD divergence. Only act on weekly candle CLOSES.",
+    "macd_12_26_9": "Tone Vays: Trend direction and divergence confirmation on weekly chart. Used alongside RSI — don't act on MACD alone.",
+    "wma_50": "Tone Vays: Intermediate trend filter on weekly chart.",
+    "wma_200": "Tone Vays: Macro bull/bear dividing line. Reclaim after dip = strong buy signal.",
+    "sma_8": "Peter Brandt: Short-term trend proxy. When 8 SMA > 18 SMA = uptrend.",
+    "sma_18": "Peter Brandt: Medium-term trend proxy. When 8 SMA < 18 SMA = downtrend. Cross = trend change signal.",
+    "volume": "Peter Brandt: Confirms pattern breakouts. High volume breakout = valid. Low volume = suspect."
   },
 
   "bias_criteria": {
     "bullish": [
-      "Last 1-min candle closed higher than the one before it",
-      "RSI is between 30 and 70"
+      "Weekly RSI < 30 with volume spike (Vays capitulation buy)",
+      "Bullish RSI divergence on weekly (price lower low, RSI higher low)",
+      "Price above WMA 200 on weekly chart (macro bull)",
+      "8 SMA crossed above 18 SMA on daily (Brandt trend proxy)",
+      "Price near key weekly/monthly support zone (DonAlt range low)",
+      "Swing Failure Pattern: wick below support, closes back above (DonAlt SFP)"
     ],
     "bearish": [
-      "Last 1-min candle closed lower than the one before it",
-      "RSI is between 30 and 70"
+      "Weekly RSI > 70 with bearish MACD divergence (Vays exhaustion)",
+      "Price lost WMA 200 on weekly close (macro bear signal)",
+      "8 SMA crossed below 18 SMA on daily (Brandt downtrend)",
+      "Price near key weekly/monthly resistance zone (DonAlt range high)",
+      "Swing Failure Pattern: wick above resistance, closes back below (DonAlt SFP)"
     ],
     "neutral": [
-      "RSI is above 70 (overbought — skip)",
-      "RSI is below 30 (oversold — skip)",
-      "Candle close change is less than 0.05% (chop — skip)"
+      "Price in the middle of a S/R range (DonAlt: only trade edges)",
+      "No confirmed weekly candle close signal (Vays: never trade intrabar)",
+      "Low-volume breakout attempt (Brandt: unconfirmed)"
     ]
   },
 
   "entry_rules": {
     "long": [
-      "Last close > previous close by at least 0.05%",
-      "RSI between 30 and 70",
-      "Enter market buy immediately"
+      "Identify key weekly/monthly support zone first (DonAlt)",
+      "Wait for weekly candle to close — never enter intrabar (Vays)",
+      "Confirm: 8 SMA > 18 SMA on daily OR RSI < 30 weekly with divergence",
+      "Optional: SFP confirmation (wick below support, daily close above)"
     ],
     "short": [
-      "Last close < previous close by at least 0.05%",
-      "RSI between 30 and 70",
-      "Enter market sell immediately"
+      "Identify key weekly/monthly resistance zone first (DonAlt)",
+      "Wait for weekly candle close with RSI > 70 + bearish MACD divergence (Vays)",
+      "Confirm: 8 SMA < 18 SMA on daily (Brandt trend proxy)",
+      "Optional: SFP at resistance (wick above, daily close below)"
     ]
   },
 
   "exit_rules": [
-    "Exit automatically after 10 seconds (next loop tick closes previous position)",
-    "No manual exit management — pure time-based scalp"
+    "Vays: Exit when weekly RSI reaches opposite extreme (sold into RSI > 70 if bought at < 30)",
+    "Brandt: Exit when chart pattern target is reached OR pattern is invalidated",
+    "DonAlt: Exit near opposite edge of S/R range. If support breaks on weekly close → cut immediately.",
+    "Universal: Invalidation = weekly close beyond stop level. No exceptions."
   ],
 
   "risk_rules": [
-    "Fixed trade size: 1% of portfolio per trade",
-    "Maximum trade size: $3.00",
-    "Maximum 6 trades per 60-second run",
-    "No stop loss — exit is time-based at next tick",
-    "For demo purposes only — minimum BitGet order size may apply"
+    "Always define invalidation point BEFORE entering (all three traders agree)",
+    "Position size based on distance to stop-loss (Brandt: risk-defined entries only)",
+    "If WMA 200 weekly lost → reduce size significantly or stay out",
+    "Patience: wait for setup to come to you, never chase (DonAlt principle)",
+    "Most consolidations last 30-60+ days before resolution — don't force trades (DonAlt)"
   ],
 
-  "notes": "Demo strategy for YouTube video. Runs 6 trades over 60 seconds, one every 10 seconds. Signal is simple price momentum on 1-min candles with RSI sanity check."
+  "what_they_agree_on": [
+    "Weekly chart closes are the most important signal — lower timeframes are noise",
+    "Fewer indicators = less noise. Quality setups over quantity.",
+    "Volume confirms breakouts (Brandt + Vays)",
+    "Risk-defined entries: always know your stop before entering",
+    "Patience: let the setup come to you"
+  ],
+
+  "notes": "Strategy synthesized from three of the most credible and transparent public BTC traders. Tone Vays (ex-Wall Street quant, Bitcoin maximalist), Peter Brandt (50+ years professional trader, classical chartist), DonAlt (Swiss trader, price structure specialist). All three focus on high timeframes (weekly/daily) and strongly discourage day trading. This is a swing/position trading framework, NOT a scalping strategy."
 }
