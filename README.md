@@ -148,6 +148,43 @@ Overall: Cautious session. BTC leading bearish, SOL the exception — watch for 
 4. Save it: *"save this brief"* (uses `session_save`)
 5. Next morning, compare: *"get yesterday's session"* (uses `session_get`)
 
+### Automated Daily Run (macOS)
+
+A LaunchAgent runs `morning_brief.sh` automatically every day at **06:30** (local time), before markets open.
+
+| File | Path |
+|------|------|
+| Original script | `scripts/morning_brief.sh` |
+| Wrapper | `~/.local/bin/morning-brief.sh` |
+| LaunchAgent | `~/Library/LaunchAgents/com.rpfi.morning-brief.plist` |
+| Output | `05 Daily Notes/BTC Morning Brief/YYYY-MM-DD.md` in Obsidian vault |
+| Stdout log | `~/.local/log/morning-brief-stdout.log` |
+| Stderr log | `~/.local/log/morning-brief-stderr.log` |
+
+> **Why a wrapper?** macOS blocks LaunchAgents from executing scripts directly out of iCloud Drive (exit 126 / EPERM). The wrapper at `~/.local/bin/morning-brief.sh` sets the correct PATH and pipes the iCloud script into bash via `cat ... | bash -s` — read access is permitted, exec is not.
+
+**Manage the job:**
+
+```bash
+# Trigger manually
+launchctl start com.rpfi.morning-brief
+
+# Check status + last exit code
+launchctl print gui/$(id -u)/com.rpfi.morning-brief | grep -E "state|last exit"
+
+# View logs
+tail -20 ~/.local/log/morning-brief-stdout.log
+tail -20 ~/.local/log/morning-brief-stderr.log
+
+# Reload after plist changes
+launchctl unload ~/Library/LaunchAgents/com.rpfi.morning-brief.plist
+launchctl load ~/Library/LaunchAgents/com.rpfi.morning-brief.plist
+```
+
+> TradingView must be running with the debug port enabled before the script fires. The script launches it automatically if not already running.
+
+> **Log rotation:** Both log files are automatically trimmed to 500 lines on each run by the wrapper (~1–2 years of daily entries).
+
 ---
 
 ## What This Tool Does
