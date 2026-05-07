@@ -1,50 +1,33 @@
 #!/usr/bin/env bash
-# Morning Brief Script — startet TradingView + MCP und erstellt Obsidian-Notiz
+# Morning Brief Script — startet TradingView falls nötig und erstellt Obsidian-Notiz
+# Manueller Start: bash scripts/morning_brief.sh
 
 set -euo pipefail
 
-# Keep log files under 500 lines
-for _log in \
-  "/Users/rpfi/.local/log/morning-brief-stdout.log" \
-  "/Users/rpfi/.local/log/morning-brief-stderr.log"; do
-  if [[ -f "$_log" ]]; then
-    tail -500 "$_log" > "$_log.tmp" && mv "$_log.tmp" "$_log"
-  fi
-done
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 VAULT_DIR="/Users/rpfi/Library/Mobile Documents/iCloud~md~obsidian/Documents/Rolf"
 BRIEF_DIR="$VAULT_DIR/05 Daily Notes/BTC Morning Brief"
 TODAY="$(date +%Y-%m-%d)"
 OUTPUT_FILE="$BRIEF_DIR/$TODAY.md"
 
-# tv-Befehl sicherstellen
-if ! command -v tv &>/dev/null; then
-  echo "tv nicht gefunden — npm link wird ausgeführt..."
-  (cd "$PROJECT_DIR" && npm link --silent)
-fi
-
-# --- TradingView starten falls CDP nicht erreichbar ---
+# CDP-Verbindung prüfen — TradingView starten falls nicht verbunden
 STATUS=$(tv status 2>/dev/null || echo '{"cdp_connected":false}')
 CDP_UP=$(echo "$STATUS" | python3 -c "import sys,json; print(json.load(sys.stdin).get('cdp_connected', False))" 2>/dev/null || echo "False")
 
 if [ "$CDP_UP" != "True" ]; then
   echo "TradingView nicht verbunden — starte mit Debug-Port..."
-  bash "$SCRIPT_DIR/launch_tv_debug_mac.sh" >/dev/null 2>&1
-  # Warte bis CDP bereit
-  for i in $(seq 1 20); do
-    sleep 1
+  bash "$SCRIPT_DIR/launch_tv_debug_mac.sh" >/dev/null 2>&1 &
+  for i in $(seq 1 30); do
+    sleep 2
     CDP_UP=$(tv status 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin).get('cdp_connected', False))" 2>/dev/null || echo "False")
     [ "$CDP_UP" = "True" ] && break
-    echo "  Warte auf CDP... ($i/20)"
+    echo "  Warte auf CDP... ($i/30)"
   done
   if [ "$CDP_UP" != "True" ]; then
-    echo "FEHLER: CDP nicht erreichbar nach 20s. TradingView manuell prüfen." >&2
+    echo "FEHLER: CDP nicht erreichbar nach 60s. TradingView manuell prüfen." >&2
     exit 1
   fi
-  # Extra Zeit für Chart-Laden
-  echo "CDP verbunden — Chart lädt..."
+  echo "CDP verbunden — warte 5s bis Chart geladen..."
   sleep 5
 fi
 

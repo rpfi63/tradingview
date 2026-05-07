@@ -2,7 +2,7 @@
 
 If you found this from the YouTube video — welcome. This is the improved fork. Everything you need is below.
 
-Built on top of the original [tradingview-mcp](https://github.com/tradesdontlie/tradingview-mcp) by [@tradesdontlie](https://github.com/tradesdontlie). Full credit to them for the foundation. This fork adds a morning brief workflow, a rules config, and fixes the launch bug on TradingView Desktop v2.14+.
+Built on top of the original [tradingview-mcp](https://github.com/tradesdontlie/tradingview-mcp) by [@tradesdontlie](https://github.com/tradesdontlie). Full credit to them for the foundation. This fork adds a morning brief workflow and a rules config.
 
 > [!WARNING]
 > **Not affiliated with TradingView Inc. or Anthropic.** This tool connects to your locally running TradingView Desktop app via Chrome DevTools Protocol. Review the [Disclaimer](#disclaimer) before use.
@@ -22,7 +22,6 @@ Built on top of the original [tradingview-mcp](https://github.com/tradesdontlie/
 | `morning_brief` | One command that scans your watchlist, reads all your indicators, and returns structured data for Claude to generate your session bias |
 | `session_save` / `session_get` | Saves your daily brief to `~/.tradingview-mcp/sessions/` so you can compare today vs yesterday |
 | `rules.json` | Write your trading rules once — bias criteria, risk rules, watchlist. The morning brief applies them automatically every day |
-| Launch bug fix | Fixed `tv_launch` compatibility with TradingView Desktop v2.14+ |
 | `tv brief` CLI | Run your morning brief from the terminal in one word |
 
 ---
@@ -77,19 +76,8 @@ Open `rules.json` and fill in:
 
 TradingView must be running with the debug port enabled.
 
-**Mac:**
 ```bash
 ./scripts/launch_tv_debug_mac.sh
-```
-
-**Windows:**
-```bash
-scripts\launch_tv_debug.bat
-```
-
-**Linux:**
-```bash
-./scripts/launch_tv_debug_linux.sh
 ```
 
 Or use the MCP tool after setup: `"Use tv_launch to start TradingView in debug mode"`
@@ -148,42 +136,18 @@ Overall: Cautious session. BTC leading bearish, SOL the exception — watch for 
 4. Save it: *"save this brief"* (uses `session_save`)
 5. Next morning, compare: *"get yesterday's session"* (uses `session_get`)
 
-### Automated Daily Run (macOS)
+### Manueller Start (empfohlen)
 
-A LaunchAgent runs `morning_brief.sh` automatically every day at **06:30** (local time), before markets open.
+Der Morning Brief wird manuell ausgeführt — **kein automatischer Start, kein LaunchAgent**.
 
-| File | Path |
-|------|------|
-| Original script | `scripts/morning_brief.sh` |
-| Wrapper | `~/.local/bin/morning-brief.sh` |
-| LaunchAgent | `~/Library/LaunchAgents/com.rpfi.morning-brief.plist` |
-| Output | `05 Daily Notes/BTC Morning Brief/YYYY-MM-DD.md` in Obsidian vault |
-| Stdout log | `~/.local/log/morning-brief-stdout.log` |
-| Stderr log | `~/.local/log/morning-brief-stderr.log` |
-
-> **Why a wrapper?** macOS blocks LaunchAgents from executing scripts directly out of iCloud Drive (exit 126 / EPERM). The wrapper at `~/.local/bin/morning-brief.sh` sets the correct PATH and pipes the iCloud script into bash via `cat ... | bash -s` — read access is permitted, exec is not.
-
-**Manage the job:**
+**Voraussetzung:** TradingView muss mit CDP-Port laufen (Schritt 3 oben). Das Script prüft die Verbindung und bricht mit einer klaren Fehlermeldung ab wenn TradingView nicht läuft.
 
 ```bash
-# Trigger manually
-launchctl start com.rpfi.morning-brief
-
-# Check status + last exit code
-launchctl print gui/$(id -u)/com.rpfi.morning-brief | grep -E "state|last exit"
-
-# View logs
-tail -20 ~/.local/log/morning-brief-stdout.log
-tail -20 ~/.local/log/morning-brief-stderr.log
-
-# Reload after plist changes
-launchctl unload ~/Library/LaunchAgents/com.rpfi.morning-brief.plist
-launchctl load ~/Library/LaunchAgents/com.rpfi.morning-brief.plist
+# Morning Brief starten
+bash scripts/morning_brief.sh
 ```
 
-> TradingView must be running with the debug port enabled before the script fires. The script launches it automatically if not already running.
-
-> **Log rotation:** Both log files are automatically trimmed to 500 lines on each run by the wrapper (~1–2 years of daily entries).
+Output landet als `YYYY-MM-DD.md` in `05 Daily Notes/BTC Morning Brief/` im Obsidian-Vault.
 
 ---
 
