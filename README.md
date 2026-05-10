@@ -147,7 +147,7 @@ Der Morning Brief wird manuell ausgeführt — **kein automatischer Start, kein 
 bash scripts/morning_brief.sh
 ```
 
-Output landet als `YYYY-MM-DD.md` in `05 Daily Notes/BTC Morning Brief/` im Obsidian-Vault.
+Output landet als `YYYY-MM-DD.md` in `04 Tagesreports/BTC Morning Brief/` im Obsidian-Vault.
 
 ---
 
