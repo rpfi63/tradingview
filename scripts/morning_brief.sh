@@ -6,7 +6,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VAULT_DIR="/Users/rpfi/Library/Mobile Documents/iCloud~md~obsidian/Documents/Rolf"
-BRIEF_DIR="$VAULT_DIR/05 Daily Notes/BTC Morning Brief"
+BRIEF_DIR="$VAULT_DIR/04 Tagesreports/BTC Morning Brief"
 TODAY="$(date +%Y-%m-%d)"
 OUTPUT_FILE="$BRIEF_DIR/$TODAY.md"
 
